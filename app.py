@@ -16,50 +16,94 @@ st.set_page_config(page_title="CorridorIQ", page_icon="◈", layout="wide")
 st.markdown(
     """
     <style>
-      .block-container {max-width: 1240px; padding-top: 2rem; padding-bottom: 4rem;}
-      h1 {font-size: 3.4rem !important; letter-spacing: -0.05em; margin-bottom: .1rem !important;}
-      h2 {letter-spacing: -0.025em; padding-top: 1.5rem !important;}
-      .eyebrow {color:#5eead4; font-weight:800; font-size:.78rem; letter-spacing:.09em; text-transform:uppercase;}
-      .subtitle {font-size:1.45rem; font-weight:650; color:#e5e7eb; margin:.15rem 0 .45rem;}
-      .tagline {font-size:1.15rem; max-width:900px; color:#cbd5e1; line-height:1.55;}
-      .badge {display:inline-block; background:#e6fffb; color:#115e59; border:1px solid #99f6e4;
-              padding:.35rem .7rem; border-radius:999px; font-size:.78rem; font-weight:750; margin:.45rem 0 1rem;}
-      .card {border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:1.05rem 1.15rem;
-             background-color:#ffffff; color:#111827; box-shadow:0 3px 14px rgba(15,23,42,.05);
-             min-height:0; height:auto; overflow-wrap:anywhere;}
-      .card div, .card b, .card strong {color:#111827;}
-      .hero-card {border-left:5px solid #e85d04; background:linear-gradient(115deg,#fff7ed 0%,#ffffff 72%);}
-      .card .card-label, .card-label {font-size:.76rem; color:#374151; font-weight:800; letter-spacing:.06em; text-transform:uppercase;}
-      .card .big-number, .big-number {font-size:2rem; font-weight:700; color:#111827; line-height:1.1; margin:.35rem 0;}
-      .card span, .card-subtext {color:#6b7280;}
-      .flow {text-align:center; border:1px solid #dbe3ea; border-radius:12px; padding:.85rem .45rem;
-             background-color:#ffffff; color:#111827; min-height:0; height:auto;}
-      .flow strong {display:block; color:#374151; font-size:.82rem; letter-spacing:.05em;}
-      .flow span {font-size:.88rem; color:#6b7280;}
-      .operator {font-size:1.8rem; font-weight:700; text-align:center; padding-top:1.25rem; color:#cbd5e1;}
-      .finding {border-top:4px solid #0f766e;}
-      .why {border:1px solid rgba(0,0,0,.08); background-color:#ffffff; color:#111827;
-            border-radius:14px; padding:1rem 1.15rem; height:auto;}
-      .why b, .why strong {color:#111827;}
-      div[data-testid="stMetric"] {border:1px solid rgba(0,0,0,.08); border-radius:12px;
-                                   padding:.8rem 1rem; background-color:#ffffff; color:#111827;
-                                   min-height:0; height:auto;}
+      :root {color-scheme:dark;}
+      html, body, [class*="st-"] {font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+      .stApp, [data-testid="stAppViewContainer"] {background:#1D1D1B; color:#F4F0E6;}
+      .block-container {max-width:1240px; padding-top:3rem !important; padding-bottom:4rem;}
+      h1, h2, h3, h4 {color:#F4F0E6 !important; font-family:inherit;}
+      h1 {font-size:3rem !important; line-height:1.05 !important; font-weight:700 !important;
+          letter-spacing:-.045em; margin-bottom:.2rem !important;}
+      h2 {font-size:1.9rem !important; line-height:1.2 !important; font-weight:700 !important;
+          letter-spacing:-.025em; padding-top:2.7rem !important; margin-bottom:.75rem !important;}
+      h3 {font-size:1.4rem !important; font-weight:600 !important;}
+      h4 {font-size:1.15rem !important; font-weight:600 !important;}
+      [data-testid="stMarkdownContainer"] p, [data-testid="stCaptionContainer"] {line-height:1.6;}
+      .eyebrow, .stage-label {color:#D6AE52; font-weight:600; font-size:.78rem; letter-spacing:.1em; text-transform:uppercase;}
+      .stage-label {margin:3.2rem 0 .65rem;}
+      .subtitle {font-size:1.4rem; font-weight:600; color:#F4F0E6; margin:.25rem 0 .5rem;}
+      .tagline {font-size:1.08rem; max-width:820px; color:#A9A59C; line-height:1.65;}
+      .badge {display:inline-block; background:rgba(214,174,82,.12); color:#D6AE52;
+              border:1px solid rgba(214,174,82,.42); padding:.35rem .7rem; border-radius:999px;
+              font-size:.78rem; font-weight:600; margin:.55rem 0 1rem;}
+      .card {border:1px solid rgba(38,37,33,.10); border-radius:12px; padding:1.05rem 1.15rem;
+             background:#F4F0E6; color:#262521; box-shadow:none; min-height:0; height:auto;
+             overflow-wrap:anywhere;}
+      .card div, .card b, .card strong {color:#262521;}
+      .hero-card {border-left:4px solid #7A263A; background:#F4F0E6;}
+      .card .card-label, .card-label {font-size:.78rem; color:rgba(38,37,33,.68); font-weight:600;
+                                     letter-spacing:.05em; text-transform:none;}
+      .card .big-number, .big-number {font-size:1.75rem; font-weight:700; color:#262521;
+                                     line-height:1.15; margin:.4rem 0;}
+      .card span, .card-subtext {color:rgba(38,37,33,.68);}
+      .flow {text-align:center; border:1px solid rgba(244,240,230,.10); border-radius:10px;
+             padding:.8rem .5rem; background:#292824; color:#F4F0E6; min-height:0; height:auto;}
+      .flow strong {display:block; color:#D6AE52; font-size:.78rem; font-weight:600; letter-spacing:.04em;}
+      .flow span {font-size:.85rem; color:#A9A59C;}
+      .operator {font-size:1.55rem; font-weight:600; text-align:center; padding-top:1.1rem; color:#A9A59C;}
+      .model-strip {display:flex; align-items:center; justify-content:center; gap:.75rem; flex-wrap:wrap;
+                    padding:.9rem 1rem; margin:.4rem 0 1.4rem; border:1px solid rgba(244,240,230,.10);
+                    border-radius:12px; background:#292824;}
+      .model-step {font-size:.82rem; font-weight:600; color:#F4F0E6; letter-spacing:.02em;}
+      .model-step.activity {background:rgba(116,122,61,.34); color:#F4F0E6; padding:.28rem .5rem; border-radius:6px;}
+      .model-step.mobility {color:#D6AE52;}
+      .model-step.mismatch, .model-step.legacy {background:rgba(122,38,58,.58); color:#F4F0E6;
+                                                padding:.28rem .5rem; border-radius:6px;}
+      .model-step.fifa {color:#D6AE52;}
+      .model-op {color:#A9A59C; font-size:1.05rem; font-weight:600;}
+      .finding {border-top:3px solid #7A263A;}
+      .why {border:1px solid rgba(38,37,33,.10); background:#F4F0E6; color:#262521;
+            border-radius:12px; padding:1rem 1.15rem; height:auto;}
+      .why b, .why strong {color:#262521;}
+      div[data-testid="stMetric"] {border:1px solid rgba(38,37,33,.10); border-radius:12px;
+                                   padding:.82rem 1rem; background:#F4F0E6; color:#262521;
+                                   min-height:0; height:auto; box-shadow:none;}
       div[data-testid="stMetric"] [data-testid="stMetricLabel"],
-      div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {color:#374151 !important;}
+      div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {color:rgba(38,37,33,.68) !important; font-weight:600;}
       div[data-testid="stMetric"] [data-testid="stMetricValue"],
-      div[data-testid="stMetric"] [data-testid="stMetricValue"] > div {color:#111827 !important; font-weight:700;}
+      div[data-testid="stMetric"] [data-testid="stMetricValue"] > div {color:#262521 !important; font-weight:700;}
       div[data-testid="stMetric"] [data-testid="stMetricDelta"],
       div[data-testid="stMetric"] [data-testid="stMetricDelta"] > div,
-      div[data-testid="stMetric"] [data-testid="stMetricDelta"] svg {color:#6b7280 !important; fill:#6b7280 !important;}
-      div[data-testid="stDataFrame"] {border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;}
-      .section-note {color:#cbd5e1; margin-top:-.65rem; margin-bottom:1rem;}
+      div[data-testid="stMetric"] [data-testid="stMetricDelta"] svg {color:#747A3D !important; fill:#747A3D !important;}
+      div[data-testid="stDataFrame"] {border:1px solid rgba(244,240,230,.10); border-radius:12px; overflow:hidden;}
+      .section-note {color:#A9A59C; margin-top:-.55rem; margin-bottom:1rem;}
+      button[kind="primary"], button[data-testid="stBaseButton-primary"] {background:#7A263A !important;
+        color:#F4F0E6 !important; border:1px solid #7A263A !important; box-shadow:none !important;}
+      button[kind="primary"]:hover, button[data-testid="stBaseButton-primary"]:hover {background:#5C1D2C !important;
+        border-color:#5C1D2C !important;}
+      button[kind="secondary"], button[data-testid="stBaseButton-secondary"], [data-testid="stDownloadButton"] button {
+        background:#292824 !important; color:#F4F0E6 !important; border:1px solid #747A3D !important; box-shadow:none !important;}
+      button[kind="secondary"]:hover, button[data-testid="stBaseButton-secondary"]:hover,
+      [data-testid="stDownloadButton"] button:hover {border-color:#D6AE52 !important; color:#F4F0E6 !important;}
+      button[data-baseweb="tab"] {color:#A9A59C !important; font-weight:600;}
+      button[data-baseweb="tab"][aria-selected="true"] {color:#F4F0E6 !important;}
+      [data-baseweb="tab-highlight"] {background-color:#7A263A !important;}
+      div[data-baseweb="select"] > div, div[data-baseweb="input"], [data-baseweb="base-input"] {
+        background:#292824 !important; border-color:rgba(169,165,156,.45) !important; color:#F4F0E6 !important;}
+      [data-testid="stAlert"] {background:rgba(116,122,61,.18) !important;
+                               border:1px solid #747A3D !important; color:#F4F0E6 !important;}
+      [data-testid="stAlert"] p, [data-testid="stAlert"] div {color:#F4F0E6 !important;}
+      [data-testid="stExpander"] {border-color:rgba(244,240,230,.10) !important; background:#292824;}
+      [data-testid="stHorizontalBlock"] {gap:1rem;}
       @media (max-width: 768px) {
         .block-container {padding:1rem .75rem 2rem;}
-        h1 {font-size:2.45rem !important;}
+        h1 {font-size:2.6rem !important;}
+        h2 {font-size:1.65rem !important; padding-top:2.1rem !important;}
         .subtitle {font-size:1.15rem;}
         .tagline {font-size:1rem;}
         .big-number {font-size:1.45rem; overflow-wrap:anywhere;}
         .flow {min-height:auto; padding:.7rem .35rem;}
+        .model-strip {justify-content:flex-start; gap:.55rem;}
+        .stage-label {margin-top:2.5rem;}
       }
     </style>
     """,
@@ -86,16 +130,16 @@ def fmt(value, pattern=".1f", unavailable="Unavailable"):
 
 
 def style_dark_chart(figure):
-    """Keep Plotly labels legible against the app's dark page without changing data colors."""
+    """Apply the shared charcoal visual system without changing chart data."""
     figure.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#e5e7eb"},
-        legend={"font": {"color": "#e5e7eb"}},
-        hoverlabel={"bgcolor": "#ffffff", "bordercolor": "#d1d5db", "font": {"color": "#111827"}},
+        font={"color": "#F4F0E6", "family": "Inter, ui-sans-serif, system-ui, sans-serif"},
+        legend={"font": {"color": "#F4F0E6"}},
+        hoverlabel={"bgcolor": "#F4F0E6", "bordercolor": "#A9A59C", "font": {"color": "#262521"}},
     )
-    figure.update_xaxes(color="#cbd5e1", gridcolor="rgba(148,163,184,.18)", zerolinecolor="rgba(148,163,184,.28)")
-    figure.update_yaxes(color="#cbd5e1", gridcolor="rgba(148,163,184,.18)", zerolinecolor="rgba(148,163,184,.28)")
+    figure.update_xaxes(color="#A9A59C", gridcolor="rgba(169,165,156,.18)", zerolinecolor="rgba(169,165,156,.28)")
+    figure.update_yaxes(color="#A9A59C", gridcolor="rgba(169,165,156,.18)", zerolinecolor="rgba(169,165,156,.28)")
     return figure
 
 
@@ -265,17 +309,18 @@ if st.session_state.guided_demo:
             st.info("Explore the map yourself → Scroll to the Houston decision surface below.")
 
 # MODEL FLOW
-st.markdown("## The mismatch is the signal")
-f1, op1, f2, op2, f3, op3, f4, op4, f5 = st.columns([1.25, .35, 1.25, .35, 1.35, .35, 1.35, .35, 1.35])
-f1.markdown('<div class="flow"><strong>URBAN INTENSITY</strong><br>Activity Score<br><span>Population density</span></div>', unsafe_allow_html=True)
-op1.markdown('<div class="operator">vs.</div>', unsafe_allow_html=True)
-f2.markdown('<div class="flow"><strong>MOBILITY</strong><br>Mobility Score<br><span>Transit + vehicle access</span></div>', unsafe_allow_html=True)
-op2.markdown('<div class="operator">→</div>', unsafe_allow_html=True)
-f3.markdown('<div class="flow"><strong>MISMATCH</strong><br>Out-of-alignment conditions</div>', unsafe_allow_html=True)
-op3.markdown('<div class="operator">×</div>', unsafe_allow_html=True)
-f4.markdown('<div class="flow"><strong>FIFA RELEVANCE</strong><br>Planning timeliness</div>', unsafe_allow_html=True)
-op4.markdown('<div class="operator">→</div>', unsafe_allow_html=True)
-f5.markdown('<div class="flow"><strong>LEGACY PRIORITY</strong><br>Decision-support index</div>', unsafe_allow_html=True)
+st.markdown('<div class="stage-label">Overview</div>', unsafe_allow_html=True)
+st.markdown("### The mismatch is the signal")
+st.markdown(
+    '''<div class="model-strip">
+    <span class="model-step activity">Activity</span><span class="model-op">−</span>
+    <span class="model-step mobility">Mobility</span><span class="model-op">→</span>
+    <span class="model-step mismatch">Mismatch</span><span class="model-op">×</span>
+    <span class="model-step fifa">FIFA Relevance</span><span class="model-op">→</span>
+    <span class="model-step legacy">Legacy Opportunity</span>
+    </div>''',
+    unsafe_allow_html=True,
+)
 
 # HERO INSIGHT
 st.markdown("## Where should planners look first?")
@@ -321,7 +366,7 @@ if priority_only:
 plot_df["distance_display"] = plot_df["distance_to_nrg_miles"].map(lambda x: f"{x:.2f} mi")
 fig = px.choropleth_map(
     plot_df, geojson=geojson, locations="GEOID", featureidkey="properties.GEOID", color=map_field,
-    color_continuous_scale=[[0, "#fff7ec"], [.25, "#fdd49e"], [.5, "#fc8d59"], [.75, "#d7301f"], [1, "#7f0000"]],
+    color_continuous_scale=[[0, "#F4F0E6"], [.38, "#D6AE52"], [.68, "#A4674D"], [1, "#7A263A"]],
     range_color=(0, 100), map_style="carto-positron", center={"lat": 29.72, "lon": -95.38}, zoom=9.25, opacity=.80,
     hover_name="tract_name", hover_data={"GEOID": False, "corridor_type": True, "legacy_priority": ":.1f",
         "mismatch_score": ":.1f", "fifa_relevance": ":.1f", "activity_score": ":.1f",
@@ -331,7 +376,7 @@ fig = px.choropleth_map(
         "mobility_score": "Mobility", "distance_display": "Distance to NRG"},
 )
 fig.add_trace(go.Scattermap(lat=[NRG_LAT], lon=[NRG_LON], mode="markers+text", text=["NRG Stadium"],
-    textposition="top center", marker={"size": 15, "color": "#0f766e"}, hovertemplate="<b>NRG Stadium</b><extra></extra>", name="NRG Stadium"))
+    textposition="top center", marker={"size": 15, "color": "#D6AE52"}, hovertemplate="<b>NRG Stadium</b><extra></extra>", name="NRG Stadium"))
 if legacy_mode:
     event_anchors = [
         ("Houston Stadium / NRG", 29.6847, -95.4107), ("Stadium Park / Astrodome", 29.6858, -95.4074),
@@ -341,7 +386,7 @@ if legacy_mode:
     ]
     fig.add_trace(go.Scattermap(lat=[item[1] for item in event_anchors], lon=[item[2] for item in event_anchors],
         mode="lines+markers", text=[item[0] for item in event_anchors],
-        marker={"size": 9, "color": "#7c3aed"}, line={"width": 4, "color": "#7c3aed"},
+        marker={"size": 9, "color": "#D6AE52"}, line={"width": 4, "color": "#D6AE52"},
         hovertemplate="<b>%{text}</b><br>Event-network reference point<extra>FIFA Event Mobility Spine</extra>",
         name="FIFA Event Mobility Spine"))
 fig.update_layout(height=650, margin={"r": 0, "t": 0, "l": 0, "b": 0}, showlegend=False,
@@ -356,22 +401,23 @@ if legacy_mode:
     legacy_points = df.dropna(subset=["fifa_relevance", "mismatch_score", "activity_score"]).copy()
     legacy_matrix = px.scatter(legacy_points, x="fifa_relevance", y="mismatch_score", size="activity_score",
         color="legacy_priority", size_max=24, opacity=.70,
-        color_continuous_scale=[[0, "#ede9fe"], [.5, "#f97316"], [1, "#7f1d1d"]],
+        color_continuous_scale=[[0, "#F4F0E6"], [.45, "#747A3D"], [.72, "#D6AE52"], [1, "#7A263A"]],
         hover_name="tract_name", hover_data={"fifa_relevance": ":.1f", "mismatch_score": ":.1f",
             "activity_score": ":.1f", "legacy_priority": ":.1f", "distance_to_nrg_miles": ":.2f",
             "suggested_intervention_category": True},
         labels={"fifa_relevance": "FIFA Relevance", "mismatch_score": "Mismatch Score",
             "activity_score": "Activity", "legacy_priority": "Legacy Priority",
             "distance_to_nrg_miles": "Distance to NRG", "suggested_intervention_category": "Potential Intervention"})
-    legacy_matrix.add_vline(x=legacy_fifa_threshold, line_dash="dash", line_color="#64748b")
-    legacy_matrix.add_hline(y=legacy_mismatch_threshold, line_dash="dash", line_color="#64748b")
-    quadrant_style = {"showarrow": False, "bgcolor": "rgba(255,255,255,.85)", "bordercolor": "#cbd5e1", "font": {"size": 11}}
+    legacy_matrix.add_vline(x=legacy_fifa_threshold, line_dash="dash", line_color="#A9A59C")
+    legacy_matrix.add_hline(y=legacy_mismatch_threshold, line_dash="dash", line_color="#A9A59C")
+    quadrant_style = {"showarrow": False, "bgcolor": "#F4F0E6", "bordercolor": "#A9A59C",
+                      "font": {"size": 11, "color": "#262521"}}
     legacy_matrix.add_annotation(x=18, y=88, text="LONG-TERM<br>COMMUNITY NEED", **quadrant_style)
     legacy_matrix.add_annotation(x=82, y=88, text="LEGACY<br>OPPORTUNITY", **quadrant_style)
     legacy_matrix.add_annotation(x=82, y=8, text="EVENT-RELEVANT /<br>LOWER EXISTING MISMATCH", **quadrant_style)
     legacy_matrix.add_annotation(x=18, y=8, text="LOWER IMMEDIATE<br>PRIORITY", **quadrant_style)
     legacy_matrix.add_trace(go.Scatter(x=[leader["fifa_relevance"]], y=[leader["mismatch_score"]], mode="markers",
-        marker={"size": 23, "color": "rgba(0,0,0,0)", "line": {"color": "#0f172a", "width": 3}},
+        marker={"size": 23, "color": "rgba(0,0,0,0)", "line": {"color": "#7A263A", "width": 3}},
         name="Highest Legacy Priority", hovertemplate=f"<b>{leader['tract_name']}</b><extra>Highest Legacy Priority</extra>"))
     legacy_matrix.update_xaxes(range=[0, 100]); legacy_matrix.update_yaxes(range=[0, 100])
     legacy_matrix.update_layout(height=610, margin={"r": 20, "t": 20, "l": 20, "b": 20},
@@ -421,13 +467,15 @@ if legacy_mode:
         st.success("Loaded Tract 3143.01 and the +15 example into Scenario Lab below.")
 
 # OPPORTUNITY MATRIX
+st.markdown('<div class="stage-label">Diagnose</div>', unsafe_allow_html=True)
 st.markdown("## Urban Opportunity Matrix")
 st.markdown('<div class="section-note">Why is it a mismatch? The diagonal marks equal Activity and Mobility scores.</div>', unsafe_allow_html=True)
 st.write("CorridorIQ focuses on the distance between urban intensity and mobility conditions. Tracts farther above the balance line exhibit larger diagnostic mismatch signals.")
 matrix_df = df.dropna(subset=["mobility_score", "activity_score", "fifa_relevance", "legacy_priority"]).copy()
 matrix = px.scatter(
     matrix_df, x="mobility_score", y="activity_score", size="fifa_relevance", color="legacy_priority",
-    size_max=24, opacity=.68, color_continuous_scale=[[0, "#dbeafe"], [.5, "#fb923c"], [1, "#991b1b"]],
+    size_max=18, opacity=.46,
+    color_continuous_scale=[[0, "#A9A59C"], [.42, "#747A3D"], [.72, "#D6AE52"], [1, "#7A263A"]],
     hover_name="tract_name", hover_data={"activity_score": ":.1f", "mobility_score": ":.1f",
         "mismatch_score": ":.1f", "fifa_relevance": ":.1f", "legacy_priority": ":.1f",
         "distance_to_nrg_miles": ":.2f", "corridor_type": True},
@@ -436,14 +484,15 @@ matrix = px.scatter(
         "mismatch_score": "Mismatch", "distance_to_nrg_miles": "Distance to NRG",
         "corridor_type": "Corridor Type"},
 )
-matrix.add_trace(go.Scatter(x=[0, 100], y=[0, 100], mode="lines", line={"color": "#64748b", "dash": "dash", "width": 2},
+matrix.add_trace(go.Scatter(x=[0, 100], y=[0, 100], mode="lines", line={"color": "#A9A59C", "dash": "dash", "width": 2},
                             name="Balance line", hovertemplate="Activity = Mobility<extra>Balance line</extra>"))
 matrix.add_trace(go.Scatter(x=[leader["mobility_score"]], y=[leader["activity_score"]], mode="markers",
-    marker={"size": 22, "color": "rgba(0,0,0,0)", "line": {"color": "#0f172a", "width": 3}},
+    marker={"size": 22, "color": "rgba(0,0,0,0)", "line": {"color": "#7A263A", "width": 3}},
     name="Highest Legacy Priority", hovertemplate=f"<b>{leader['tract_name']}</b><extra>Highest Legacy Priority</extra>"))
 matrix.add_annotation(x=leader["mobility_score"], y=leader["activity_score"], text=leader["tract_name"].split(";")[0],
-                      showarrow=True, arrowhead=2, ax=55, ay=-35, bgcolor="white", bordercolor="#cbd5e1")
-matrix.add_annotation(x=72, y=68, text="Balance line", showarrow=False, font={"color": "#475569"}, textangle=-38)
+                      showarrow=True, arrowhead=2, ax=55, ay=-35, bgcolor="#F4F0E6", bordercolor="#A9A59C",
+                      font={"color": "#262521"})
+matrix.add_annotation(x=72, y=68, text="Balance line", showarrow=False, font={"color": "#A9A59C"}, textangle=-38)
 matrix.update_xaxes(range=[0, 100], constrain="domain")
 matrix.update_yaxes(range=[0, 100], scaleanchor="x", scaleratio=1)
 matrix.update_layout(height=650, margin={"r": 20, "t": 25, "l": 20, "b": 20},
@@ -473,7 +522,7 @@ heat_fields = ["economic_score", "activity_score", "mobility_score", "mismatch_s
 heat_labels = ["Economic", "Activity", "Mobility", "Mismatch", "FIFA Relevance", "Legacy Priority"]
 heat_df = df.nlargest(15, "legacy_priority").set_index("tract_name")[heat_fields]
 heatmap = go.Figure(go.Heatmap(z=heat_df.values, x=heat_labels, y=[name.split("; Harris")[0] for name in heat_df.index],
-    zmin=0, zmax=100, colorscale=[[0, "#f0fdfa"], [.5, "#5eead4"], [1, "#115e59"]],
+    zmin=0, zmax=100, colorscale=[[0, "#F4F0E6"], [.38, "#D6AE52"], [.68, "#747A3D"], [1, "#5C1D2C"]],
     text=heat_df.values, texttemplate="%{text:.1f}", hovertemplate="<b>%{y}</b><br>%{x}: %{z:.1f}<extra></extra>",
     colorbar={"title": "Score"}))
 heatmap.update_layout(height=590, margin={"r": 25, "t": 15, "l": 20, "b": 20},
@@ -543,6 +592,7 @@ download_name = "corridoriq_fifa_legacy_watchlist.csv" if legacy_mode else "corr
 st.download_button(download_label, ranked_download.to_csv(index=False).encode("utf-8"), download_name, "text/csv")
 
 # PRODUCT TABS
+st.markdown('<div class="stage-label">Decide</div>', unsafe_allow_html=True)
 st.markdown("## Explore decisions")
 explore_tab, scenario_tab, strategy_tab, compare_tab, robustness_tab = st.tabs(
     ["Explore", "Scenario Lab", "Strategy Simulator", "Compare Corridors", "Robustness"])
@@ -560,7 +610,8 @@ with explore_tab:
         "Score": [tract["economic_score"], tract["activity_score"], tract["mobility_score"],
                   tract["mismatch_score"], tract["fifa_relevance"]]})
     bar = px.bar(chart_data, x="Score", y="Dimension", orientation="h", range_x=[0, 100], text_auto=".1f",
-                 color="Dimension", color_discrete_sequence=["#94a3b8", "#0f766e", "#2563eb", "#e85d04", "#7c3aed"])
+                 color="Dimension", color_discrete_map={"Economic": "#A9A59C", "Activity": "#747A3D",
+                     "Mobility": "#747A3D", "Mismatch": "#7A263A", "FIFA Relevance": "#D6AE52"})
     bar.update_layout(height=330, showlegend=False, margin={"r": 15, "t": 10, "l": 10, "b": 10})
     style_dark_chart(bar)
     st.plotly_chart(bar, width="stretch")
@@ -611,7 +662,7 @@ with scenario_tab:
         "Score": [current_mobility, scenario_tract["mismatch_score"], scenario_tract["legacy_priority"], scenario_mobility, scenario_mismatch, scenario_priority],
         "State": ["Baseline"] * 3 + ["Scenario"] * 3})
     scenario_fig = px.bar(scenario_chart, x="Metric", y="Score", color="State", barmode="group", range_y=[0, 100],
-                          color_discrete_map={"Baseline": "#94a3b8", "Scenario": "#0f766e"}, text_auto=".1f")
+                          color_discrete_map={"Baseline": "#A9A59C", "Scenario": "#747A3D"}, text_auto=".1f")
     scenario_fig.update_layout(height=380, margin={"r": 10, "t": 15, "l": 10, "b": 10})
     style_dark_chart(scenario_fig)
     st.plotly_chart(scenario_fig, width="stretch")
@@ -687,11 +738,14 @@ with strategy_tab:
     st.markdown("#### Baseline / Scenario / Change map")
     strategy_map_view = st.radio("Map view", ["Baseline", "Scenario", "Change"], horizontal=True, key="strategy_map_view")
     if strategy_map_view == "Baseline":
-        strategy_field, strategy_label, strategy_scale, strategy_range = "mismatch_score", "Baseline Mismatch", "YlOrRd", (0, 100)
+        strategy_field, strategy_label = "mismatch_score", "Baseline Mismatch"
+        strategy_scale, strategy_range = [[0, "#F4F0E6"], [.45, "#D6AE52"], [1, "#7A263A"]], (0, 100)
     elif strategy_map_view == "Scenario":
-        strategy_field, strategy_label, strategy_scale, strategy_range = "scenario_mismatch", "Scenario Mismatch", "YlOrRd", (0, 100)
+        strategy_field, strategy_label = "scenario_mismatch", "Scenario Mismatch"
+        strategy_scale, strategy_range = [[0, "#F4F0E6"], [.45, "#D6AE52"], [1, "#7A263A"]], (0, 100)
     else:
-        strategy_field, strategy_label, strategy_scale = "mismatch_change", "Mismatch Reduction", "Blues"
+        strategy_field, strategy_label = "mismatch_change", "Mismatch Reduction"
+        strategy_scale = [[0, "#F4F0E6"], [1, "#747A3D"]]
         strategy_range = (0, max(1, scenario_city["mismatch_change"].max()))
     strategy_map = px.choropleth_map(scenario_city.dropna(subset=[strategy_field]), geojson=geojson,
         locations="GEOID", featureidkey="properties.GEOID", color=strategy_field,
@@ -703,7 +757,7 @@ with strategy_tab:
                 "scenario_mismatch": "Scenario Mismatch", "mismatch_change": "Change",
                 "scenario_mobility": "Scenario Mobility", "fifa_relevance": "FIFA Relevance"})
     strategy_map.add_trace(go.Scattermap(lat=[NRG_LAT], lon=[NRG_LON], mode="markers+text", text=["NRG Stadium"],
-        textposition="top center", marker={"size": 13, "color": "#0f766e"},
+        textposition="top center", marker={"size": 13, "color": "#D6AE52"},
         hovertemplate="<b>NRG Stadium</b><extra></extra>", name="NRG Stadium"))
     strategy_map.update_layout(height=560, margin={"r": 0, "t": 0, "l": 0, "b": 0}, showlegend=False,
                                coloraxis_colorbar={"title": strategy_label})
@@ -720,7 +774,7 @@ with strategy_tab:
         pathway.append({"Year": year, "Phase": phase, "Average Targeted Mismatch": phase_mismatch.mean()})
     pathway_df = pd.DataFrame(pathway)
     timeline = px.line(pathway_df, x="Year", y="Average Targeted Mismatch", markers=True, text="Phase",
-                       range_y=[0, 100], color_discrete_sequence=["#0f766e"])
+                       range_y=[0, 100], color_discrete_sequence=["#747A3D"])
     timeline.update_traces(textposition="top center", line={"width": 4}, marker={"size": 10})
     timeline.update_traces(hovertemplate="<b>%{text}</b><br>Year: %{x}<br>Average targeted mismatch: %{y:.1f}<extra></extra>")
     timeline.update_layout(height=360, margin={"r": 20, "t": 30, "l": 20, "b": 20},
@@ -762,7 +816,7 @@ with compare_tab:
         "Score": [tract_a[x] for x in fields] + [tract_b[x] for x in fields],
         "Tract": ["Tract A"] * 6 + ["Tract B"] * 6})
     comparison_fig = px.bar(comparison, x="Dimension", y="Score", color="Tract", barmode="group", range_y=[0, 100],
-                            color_discrete_map={"Tract A": "#0f766e", "Tract B": "#e85d04"}, text_auto=".1f")
+                            color_discrete_map={"Tract A": "#747A3D", "Tract B": "#7A263A"}, text_auto=".1f")
     comparison_fig.update_layout(height=420, margin={"r": 10, "t": 20, "l": 10, "b": 10})
     style_dark_chart(comparison_fig)
     st.plotly_chart(comparison_fig, width="stretch")
@@ -833,7 +887,7 @@ with robustness_tab:
         st.write("If the same corridors remain highly ranked under several assumptions, the priority signal is less dependent on the exact distance parameter.")
 
     st.markdown("#### Countywide score distribution")
-    hist = px.histogram(df, x="legacy_priority", nbins=25, color_discrete_sequence=["#0f766e"],
+    hist = px.histogram(df, x="legacy_priority", nbins=25, color_discrete_sequence=["#7A263A"],
                         labels={"legacy_priority": "Legacy Priority"})
     hist.update_layout(height=340, showlegend=False, margin={"r": 10, "t": 15, "l": 10, "b": 10})
     style_dark_chart(hist)
