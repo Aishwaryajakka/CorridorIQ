@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+.venvv/
+venv/
+env/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+secrets.toml
+*.pem
+*.key
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+.cache/
+
+# Unused large source files and duplicate boundary extracts
+data/raw/metro/stop_times.txt
+data/raw/boundaries/tl_2024_48_tract.zip
+data/raw/boundaries/tl_2024_48_tract/
+data/raw/landuse/
+
+# Superseded processed artifacts; keep corridoriq_tracts CSV/GeoJSON tracked
+data/processed/houston_urban_dna.csv
+data/processed/houston_urban_dna.geojson
+data/processed/tract_landuse.csv
