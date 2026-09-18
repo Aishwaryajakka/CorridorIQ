@@ -17,7 +17,7 @@ st.markdown(
     """
     <style>
       :root {color-scheme:dark;}
-      html, body, [class*="st-"] {font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+      html, body, [data-testid="stAppViewContainer"] {font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
       .stApp, [data-testid="stAppViewContainer"] {background:#1D1D1B; color:#F4F0E6;}
       .block-container {max-width:1240px; padding-top:3rem !important; padding-bottom:4rem;}
       h1, h2, h3, h4 {color:#F4F0E6 !important; font-family:inherit;}
@@ -74,6 +74,12 @@ st.markdown(
       div[data-testid="stMetric"] [data-testid="stMetricDelta"],
       div[data-testid="stMetric"] [data-testid="stMetricDelta"] > div,
       div[data-testid="stMetric"] [data-testid="stMetricDelta"] svg {color:#747A3D !important; fill:#747A3D !important;}
+      .category-metric {border:1px solid rgba(38,37,33,.10); border-radius:12px; padding:.82rem 1rem;
+                        background:#F4F0E6; color:#262521; min-height:6.4rem; height:auto; box-shadow:none;}
+      .category-metric-label {color:rgba(38,37,33,.68); font-size:.875rem; font-weight:600; margin-bottom:.2rem;}
+      .category-metric-value {color:#262521; font-size:clamp(1.35rem,2vw,2rem); font-weight:700;
+                              line-height:1.1; white-space:normal; overflow:visible;
+                              text-overflow:unset; overflow-wrap:break-word;}
       div[data-testid="stDataFrame"] {border:1px solid rgba(244,240,230,.10); border-radius:12px; overflow:hidden;}
       .section-note {color:#A9A59C; margin-top:-.55rem; margin-bottom:1rem;}
       button[kind="primary"], button[data-testid="stBaseButton-primary"] {background:#7A263A !important;
@@ -706,7 +712,11 @@ with explore_tab:
     choice = st.selectbox("Select a tract", selector_options, key="selected_tract")
     tract = df.loc[df["selector"] == choice].iloc[0]
     e1, e2, e3, e4 = st.columns(4)
-    e1.metric("Corridor Type", tract["corridor_type"])
+    e1.markdown(
+        f'''<div class="category-metric"><div class="category-metric-label">Corridor Type</div>
+        <div class="category-metric-value">{tract["corridor_type"]}</div></div>''',
+        unsafe_allow_html=True,
+    )
     e2.metric("Legacy Priority", fmt(tract["legacy_priority"]))
     e3.metric("Mismatch", fmt(tract["mismatch_score"]))
     e4.metric("FIFA Relevance", fmt(tract["fifa_relevance"]))
