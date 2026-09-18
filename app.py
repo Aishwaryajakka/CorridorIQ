@@ -19,26 +19,40 @@ st.markdown(
       .block-container {max-width: 1240px; padding-top: 2rem; padding-bottom: 4rem;}
       h1 {font-size: 3.4rem !important; letter-spacing: -0.05em; margin-bottom: .1rem !important;}
       h2 {letter-spacing: -0.025em; padding-top: 1.5rem !important;}
-      .eyebrow {color:#0f766e; font-weight:800; font-size:.78rem; letter-spacing:.09em; text-transform:uppercase;}
-      .subtitle {font-size:1.45rem; font-weight:650; color:#243447; margin:.15rem 0 .45rem;}
-      .tagline {font-size:1.15rem; max-width:900px; color:#334155; line-height:1.55;}
+      .eyebrow {color:#5eead4; font-weight:800; font-size:.78rem; letter-spacing:.09em; text-transform:uppercase;}
+      .subtitle {font-size:1.45rem; font-weight:650; color:#e5e7eb; margin:.15rem 0 .45rem;}
+      .tagline {font-size:1.15rem; max-width:900px; color:#cbd5e1; line-height:1.55;}
       .badge {display:inline-block; background:#e6fffb; color:#115e59; border:1px solid #99f6e4;
               padding:.35rem .7rem; border-radius:999px; font-size:.78rem; font-weight:750; margin:.45rem 0 1rem;}
-      .card {border:1px solid #dbe3ea; border-radius:14px; padding:1.05rem 1.15rem; background:#fff;
-             box-shadow:0 3px 14px rgba(15,23,42,.05); min-height:100%;}
+      .card {border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:1.05rem 1.15rem;
+             background-color:#ffffff; color:#111827; box-shadow:0 3px 14px rgba(15,23,42,.05);
+             min-height:0; height:auto; overflow-wrap:anywhere;}
+      .card div, .card b, .card strong {color:#111827;}
       .hero-card {border-left:5px solid #e85d04; background:linear-gradient(115deg,#fff7ed 0%,#ffffff 72%);}
-      .card-label {font-size:.76rem; color:#64748b; font-weight:800; letter-spacing:.06em; text-transform:uppercase;}
-      .big-number {font-size:2rem; font-weight:800; color:#0f172a; line-height:1.1; margin:.35rem 0;}
+      .card .card-label, .card-label {font-size:.76rem; color:#374151; font-weight:800; letter-spacing:.06em; text-transform:uppercase;}
+      .card .big-number, .big-number {font-size:2rem; font-weight:700; color:#111827; line-height:1.1; margin:.35rem 0;}
+      .card span, .card-subtext {color:#6b7280;}
       .flow {text-align:center; border:1px solid #dbe3ea; border-radius:12px; padding:.85rem .45rem;
-             background:#f8fafc; min-height:110px;}
-      .flow strong {display:block; color:#0f766e; font-size:.82rem; letter-spacing:.05em;}
-      .flow span {font-size:.88rem; color:#475569;}
-      .operator {font-size:1.8rem; font-weight:700; text-align:center; padding-top:1.25rem; color:#94a3b8;}
+             background-color:#ffffff; color:#111827; min-height:0; height:auto;}
+      .flow strong {display:block; color:#374151; font-size:.82rem; letter-spacing:.05em;}
+      .flow span {font-size:.88rem; color:#6b7280;}
+      .operator {font-size:1.8rem; font-weight:700; text-align:center; padding-top:1.25rem; color:#cbd5e1;}
       .finding {border-top:4px solid #0f766e;}
-      .why {border:1px solid #99f6e4; background:#f0fdfa; border-radius:14px; padding:1rem 1.15rem;}
-      div[data-testid="stMetric"] {border:1px solid #e2e8f0; border-radius:12px; padding:.8rem 1rem; background:#fff;}
+      .why {border:1px solid rgba(0,0,0,.08); background-color:#ffffff; color:#111827;
+            border-radius:14px; padding:1rem 1.15rem; height:auto;}
+      .why b, .why strong {color:#111827;}
+      div[data-testid="stMetric"] {border:1px solid rgba(0,0,0,.08); border-radius:12px;
+                                   padding:.8rem 1rem; background-color:#ffffff; color:#111827;
+                                   min-height:0; height:auto;}
+      div[data-testid="stMetric"] [data-testid="stMetricLabel"],
+      div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {color:#374151 !important;}
+      div[data-testid="stMetric"] [data-testid="stMetricValue"],
+      div[data-testid="stMetric"] [data-testid="stMetricValue"] > div {color:#111827 !important; font-weight:700;}
+      div[data-testid="stMetric"] [data-testid="stMetricDelta"],
+      div[data-testid="stMetric"] [data-testid="stMetricDelta"] > div,
+      div[data-testid="stMetric"] [data-testid="stMetricDelta"] svg {color:#6b7280 !important; fill:#6b7280 !important;}
       div[data-testid="stDataFrame"] {border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;}
-      .section-note {color:#64748b; margin-top:-.65rem; margin-bottom:1rem;}
+      .section-note {color:#cbd5e1; margin-top:-.65rem; margin-bottom:1rem;}
       @media (max-width: 768px) {
         .block-container {padding:1rem .75rem 2rem;}
         h1 {font-size:2.45rem !important;}
@@ -69,6 +83,20 @@ def load_data():
 
 def fmt(value, pattern=".1f", unavailable="Unavailable"):
     return format(value, pattern) if pd.notna(value) else unavailable
+
+
+def style_dark_chart(figure):
+    """Keep Plotly labels legible against the app's dark page without changing data colors."""
+    figure.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font={"color": "#e5e7eb"},
+        legend={"font": {"color": "#e5e7eb"}},
+        hoverlabel={"bgcolor": "#ffffff", "bordercolor": "#d1d5db", "font": {"color": "#111827"}},
+    )
+    figure.update_xaxes(color="#cbd5e1", gridcolor="rgba(148,163,184,.18)", zerolinecolor="rgba(148,163,184,.28)")
+    figure.update_yaxes(color="#cbd5e1", gridcolor="rgba(148,163,184,.18)", zerolinecolor="rgba(148,163,184,.28)")
+    return figure
 
 
 def tract_explanation(row):
@@ -348,6 +376,7 @@ if legacy_mode:
     legacy_matrix.update_xaxes(range=[0, 100]); legacy_matrix.update_yaxes(range=[0, 100])
     legacy_matrix.update_layout(height=610, margin={"r": 20, "t": 20, "l": 20, "b": 20},
                                 coloraxis_colorbar={"title": "Legacy Priority"})
+    style_dark_chart(legacy_matrix)
     st.plotly_chart(legacy_matrix, width="stretch")
 
     bs1, bs2, bs3 = st.columns(3)
@@ -419,6 +448,7 @@ matrix.update_xaxes(range=[0, 100], constrain="domain")
 matrix.update_yaxes(range=[0, 100], scaleanchor="x", scaleratio=1)
 matrix.update_layout(height=650, margin={"r": 20, "t": 25, "l": 20, "b": 20},
                      legend={"orientation": "h", "y": 1.04, "x": 0}, coloraxis_colorbar={"title": "Legacy Priority"})
+style_dark_chart(matrix)
 st.plotly_chart(matrix, width="stretch")
 st.caption("Bubble size represents FIFA Relevance. Points near the diagonal are relatively balanced under the prototype indicators; this is not a measure of congestion.")
 
@@ -448,6 +478,8 @@ heatmap = go.Figure(go.Heatmap(z=heat_df.values, x=heat_labels, y=[name.split(";
     colorbar={"title": "Score"}))
 heatmap.update_layout(height=590, margin={"r": 25, "t": 15, "l": 20, "b": 20},
                       xaxis={"side": "top"}, yaxis={"autorange": "reversed"})
+heatmap.update_traces(textfont={"shadow": "auto"})
+style_dark_chart(heatmap)
 st.plotly_chart(heatmap, width="stretch")
 
 # FINDINGS
@@ -530,6 +562,7 @@ with explore_tab:
     bar = px.bar(chart_data, x="Score", y="Dimension", orientation="h", range_x=[0, 100], text_auto=".1f",
                  color="Dimension", color_discrete_sequence=["#94a3b8", "#0f766e", "#2563eb", "#e85d04", "#7c3aed"])
     bar.update_layout(height=330, showlegend=False, margin={"r": 15, "t": 10, "l": 10, "b": 10})
+    style_dark_chart(bar)
     st.plotly_chart(bar, width="stretch")
     st.markdown(f'<div class="why"><div class="card-label">Why this tract is flagged</div><b>{tract_explanation(tract)}</b><br><br>{tract["priority_reason"]}</div>', unsafe_allow_html=True)
 
@@ -580,6 +613,7 @@ with scenario_tab:
     scenario_fig = px.bar(scenario_chart, x="Metric", y="Score", color="State", barmode="group", range_y=[0, 100],
                           color_discrete_map={"Baseline": "#94a3b8", "Scenario": "#0f766e"}, text_auto=".1f")
     scenario_fig.update_layout(height=380, margin={"r": 10, "t": 15, "l": 10, "b": 10})
+    style_dark_chart(scenario_fig)
     st.plotly_chart(scenario_fig, width="stretch")
     if improvement == 0:
         scenario_sentence = "The baseline preset leaves mobility, mismatch, FIFA relevance, and diagnostic priority unchanged."
@@ -691,6 +725,7 @@ with strategy_tab:
     timeline.update_traces(hovertemplate="<b>%{text}</b><br>Year: %{x}<br>Average targeted mismatch: %{y:.1f}<extra></extra>")
     timeline.update_layout(height=360, margin={"r": 20, "t": 30, "l": 20, "b": 20},
                            xaxis={"tickmode": "array", "tickvals": [2026, 2027, 2028, 2030]})
+    style_dark_chart(timeline)
     st.plotly_chart(timeline, width="stretch")
     st.warning("Illustrative implementation pathway — not a forecast.")
 
@@ -729,6 +764,7 @@ with compare_tab:
     comparison_fig = px.bar(comparison, x="Dimension", y="Score", color="Tract", barmode="group", range_y=[0, 100],
                             color_discrete_map={"Tract A": "#0f766e", "Tract B": "#e85d04"}, text_auto=".1f")
     comparison_fig.update_layout(height=420, margin={"r": 10, "t": 20, "l": 10, "b": 10})
+    style_dark_chart(comparison_fig)
     st.plotly_chart(comparison_fig, width="stretch")
     if abs(tract_a["activity_score"] - tract_b["activity_score"]) <= 10:
         sentence = (f"These tracts have similar activity intensity, but {'Tract A' if tract_a['mismatch_score'] > tract_b['mismatch_score'] else 'Tract B'} "
@@ -800,6 +836,7 @@ with robustness_tab:
     hist = px.histogram(df, x="legacy_priority", nbins=25, color_discrete_sequence=["#0f766e"],
                         labels={"legacy_priority": "Legacy Priority"})
     hist.update_layout(height=340, showlegend=False, margin={"r": 10, "t": 15, "l": 10, "b": 10})
+    style_dark_chart(hist)
     st.plotly_chart(hist, width="stretch")
     st.caption("The zero-heavy distribution is a real model result: most tracts do not have a positive activity–mobility gap. It is not adjusted for visual effect.")
 
