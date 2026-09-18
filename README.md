@@ -1054,36 +1054,6 @@ The guided walkthrough moves through:
 3. Intervention scenario
 4. Sensitivity / legacy
 
----
-
-# Screenshots
-
-## Houston Decision Surface
-
-_Add screenshot here_
-
-```markdown
-![CorridorIQ Decision Surface](docs/images/decision-surface.png)
-```
-
-## Urban Opportunity Matrix
-
-_Add screenshot here_
-
-```markdown
-![Urban Opportunity Matrix](docs/images/opportunity-matrix.png)
-```
-
-## Strategy Lab
-
-_Add screenshot here_
-
-```markdown
-![CorridorIQ Strategy Lab](docs/images/strategy-lab.png)
-```
-
----
-
 # Hackathon Alignment
 
 ## Track 4 — High Intensity Corridors & Future Growth Districts
