@@ -143,6 +143,61 @@ def style_dark_chart(figure):
     return figure
 
 
+def opportunity_matrix_figure(frame, selected, height=650):
+    """Build the existing opportunity matrix for the dashboard or guided walkthrough."""
+    matrix_df = frame.dropna(
+        subset=["mobility_score", "activity_score", "fifa_relevance", "legacy_priority"]
+    ).copy()
+    figure = px.scatter(
+        matrix_df, x="mobility_score", y="activity_score", size="fifa_relevance", color="legacy_priority",
+        size_max=18, opacity=.46,
+        color_continuous_scale=[[0, "#A9A59C"], [.42, "#747A3D"], [.72, "#D6AE52"], [1, "#7A263A"]],
+        hover_name="tract_name", hover_data={"activity_score": ":.1f", "mobility_score": ":.1f",
+            "mismatch_score": ":.1f", "fifa_relevance": ":.1f", "legacy_priority": ":.1f",
+            "distance_to_nrg_miles": ":.2f", "corridor_type": True},
+        labels={"mobility_score": "Mobility Score", "activity_score": "Activity Score",
+            "legacy_priority": "Legacy Priority", "fifa_relevance": "FIFA Relevance",
+            "mismatch_score": "Mismatch", "distance_to_nrg_miles": "Distance to NRG",
+            "corridor_type": "Corridor Type"},
+    )
+    figure.add_trace(go.Scatter(
+        x=[0, 100], y=[0, 100], mode="lines",
+        line={"color": "#A9A59C", "dash": "dash", "width": 2},
+        name="Balance line", hovertemplate="Activity = Mobility<extra>Balance line</extra>"))
+    figure.add_trace(go.Scatter(
+        x=[selected["mobility_score"]], y=[selected["activity_score"]], mode="markers",
+        marker={"size": 22, "color": "rgba(0,0,0,0)", "line": {"color": "#7A263A", "width": 3}},
+        name="Selected tract", hovertemplate=f"<b>{selected['tract_name']}</b><extra>Selected tract</extra>"))
+    figure.add_annotation(
+        x=selected["mobility_score"], y=selected["activity_score"],
+        text=selected["tract_name"].split(";")[0], showarrow=True, arrowhead=2, ax=55, ay=-35,
+        bgcolor="#F4F0E6", bordercolor="#A9A59C", font={"color": "#262521"})
+    figure.add_annotation(
+        x=72, y=68, text="Balance line", showarrow=False,
+        font={"color": "#A9A59C"}, textangle=-38)
+    figure.update_xaxes(range=[0, 100], constrain="domain")
+    figure.update_yaxes(range=[0, 100], scaleanchor="x", scaleratio=1)
+    figure.update_layout(
+        height=height, margin={"r": 20, "t": 25, "l": 20, "b": 20},
+        legend={"orientation": "h", "y": 1.04, "x": 0},
+        coloraxis_colorbar={"title": "Legacy Priority"})
+    return style_dark_chart(figure)
+
+
+def scenario_comparison_figure(baseline_values, scenario_values_display, height=380):
+    """Build the existing baseline-versus-scenario chart from supplied display values."""
+    chart = pd.DataFrame({
+        "Metric": ["Mobility", "Mismatch", "Legacy Priority"] * 2,
+        "Score": [*baseline_values, *scenario_values_display],
+        "State": ["Baseline"] * 3 + ["Scenario"] * 3,
+    })
+    figure = px.bar(
+        chart, x="Metric", y="Score", color="State", barmode="group", range_y=[0, 100],
+        color_discrete_map={"Baseline": "#A9A59C", "Scenario": "#747A3D"}, text_auto=".1f")
+    figure.update_layout(height=height, margin={"r": 10, "t": 15, "l": 10, "b": 10})
+    return style_dark_chart(figure)
+
+
 def tract_explanation(row):
     if pd.isna(row["mismatch_score"]):
         return "This tract lacks a complete mobility signal, so the model does not assign a diagnostic priority."
@@ -221,6 +276,29 @@ legacy_fifa_threshold = df["fifa_relevance"].quantile(0.75)
 high_mismatch = df["mismatch_score"] >= legacy_mismatch_threshold
 strong_fifa = df["fifa_relevance"] >= legacy_fifa_threshold
 legacy_opportunity = high_mismatch & strong_fifa
+if "guided_demo" not in st.session_state:
+    st.session_state.guided_demo = False
+if "guided_step" not in st.session_state:
+    st.session_state.guided_step = 1
+if "guided_tract_geoid" not in st.session_state:
+    st.session_state.guided_tract_geoid = leader["GEOID"]
+
+
+def guided_back():
+    st.session_state.guided_step = max(1, int(st.session_state.guided_step) - 1)
+
+
+def guided_next():
+    current_step = int(st.session_state.guided_step)
+    if current_step < 4:
+        st.session_state.guided_step = current_step + 1
+        return
+    selected = df.loc[df["GEOID"] == st.session_state.guided_tract_geoid].iloc[0]
+    st.session_state.guided_demo = False
+    st.session_state.selected_tract = selected["selector"]
+    st.session_state.scenario_tract = selected["selector"]
+    st.session_state.scenario_preset = "Moderate Mobility Improvement (+15)"
+
 
 # HERO
 st.markdown('<div class="eyebrow">Houston urban decision support</div>', unsafe_allow_html=True)
@@ -235,6 +313,11 @@ st.write(
     "Most urban dashboards show where indicators are high or low. CorridorIQ focuses on where they conflict. "
     "It combines a tract-level mismatch diagnostic with FIFA relevance to surface areas that may deserve closer planning attention."
 )
+st.caption(
+    "Mismatch = the difference between activity and mobility signals · "
+    "FIFA Relevance = an event-proximity planning proxy · "
+    "Legacy Priority = the overlap of mismatch and FIFA relevance"
+)
 
 analysis_mode = st.radio("Analysis Mode", ["Citywide Analysis", "FIFA Legacy Mode"], horizontal=True)
 legacy_mode = analysis_mode == "FIFA Legacy Mode"
@@ -243,7 +326,7 @@ if st.session_state.get("last_analysis_mode") != analysis_mode:
     if legacy_mode:
         st.session_state.scenario_tract = leader["selector"]
     st.session_state.last_analysis_mode = analysis_mode
-if legacy_mode:
+if legacy_mode and not st.session_state.guided_demo:
     st.markdown("## Where can event-driven mobility investment create lasting value?")
     st.markdown('<div class="subtitle">CorridorIQ identifies places where FIFA/event relevance overlaps with existing activity–mobility mismatches.</div>', unsafe_allow_html=True)
     st.write("A mega-event creates a temporary window for infrastructure investment. CorridorIQ helps distinguish locations that are merely close to event activity from locations where event-driven investment also aligns with an existing community mobility need.")
@@ -253,60 +336,107 @@ if legacy_mode:
     lm3.markdown('<div class="flow"><strong>LEGACY OPPORTUNITY</strong><br>Where both conditions overlap</div>', unsafe_allow_html=True)
 
 # GUIDED DEMO MODE
-if "guided_demo" not in st.session_state:
-    st.session_state.guided_demo = False
 guide_label = "Close guided demo" if st.session_state.guided_demo else "▶ Start 60-second guided demo"
 if st.button(guide_label, type="primary", key="guide_toggle"):
-    st.session_state.guided_demo = not st.session_state.guided_demo
+    if st.session_state.guided_demo:
+        st.session_state.guided_demo = False
+    else:
+        st.session_state.guided_demo = True
+        st.session_state.guided_step = 1
+        st.session_state.guided_tract_geoid = leader["GEOID"]
+        st.session_state.selected_tract = leader["selector"]
+        st.session_state.scenario_tract = leader["selector"]
+        st.session_state.scenario_preset = "Moderate Mobility Improvement (+15)"
     st.rerun()
 if st.session_state.guided_demo:
+    demo_tract = df.loc[df["GEOID"] == st.session_state.guided_tract_geoid].iloc[0]
+    guide_step = int(st.session_state.guided_step)
     with st.container(border=True):
         st.markdown('<div class="eyebrow">60-second guided demo</div>', unsafe_allow_html=True)
-        if legacy_mode:
-            st.write("**Decision:** Where can event-driven mobility investment support FIFA access while also addressing an existing community mismatch?")
-        guide_step = st.radio("Demo stage", ["1 · The mismatch is the signal", "2 · Add the FIFA lens",
-            "3 · Test an intervention", "4 · Check robustness"], horizontal=True, label_visibility="collapsed")
-        if guide_step.startswith("1"):
+        st.progress(guide_step / 4, text=f"Step {guide_step} of 4 · {demo_tract['tract_name']}")
+
+        if guide_step == 1:
+            st.subheader("1. Find the mismatch")
+            st.write("**Where are urban intensity and mobility out of alignment?**")
             g1, g2, g3 = st.columns(3)
-            g1.metric("Activity", f"{leader['activity_score']:.1f}")
-            g2.metric("Mobility", f"{leader['mobility_score']:.1f}")
-            g3.metric("Mismatch", f"{leader['mismatch_score']:.1f}")
-            st.write(f"{leader['tract_name']} sits far above the balance line: urban activity intensity substantially exceeds its mobility score. See the Urban Opportunity Matrix below.")
-        elif guide_step.startswith("2"):
-            g1, op_a, g2, op_b, g3 = st.columns([1, .25, 1, .25, 1])
-            g1.metric("Mismatch", f"{leader['mismatch_score']:.1f}")
-            op_a.markdown('<div class="operator">×</div>', unsafe_allow_html=True)
-            g2.metric("FIFA Relevance", f"{leader['fifa_relevance']:.1f}")
-            op_b.markdown('<div class="operator">=</div>', unsafe_allow_html=True)
-            g3.metric("Legacy Priority", f"{leader['legacy_priority']:.1f}")
-            st.caption(f"Distance to NRG: {leader['distance_to_nrg_miles']:.2f} miles")
-            st.write("A mismatch alone does not determine priority. FIFA relevance identifies which mismatches may be especially timely during World Cup planning; it is not measured visitor demand.")
-        elif guide_step.startswith("3"):
-            gm, gmis, gp, gr = scenario_values(leader, 15, df)
-            baseline_rank = int(leader["baseline_rank"])
-            guide_scenario = pd.DataFrame({"Measure": ["Mobility", "Mismatch", "Legacy Priority", "Rank"],
-                "Baseline": [f"{leader['mobility_score']:.1f}", f"{leader['mismatch_score']:.1f}",
-                             f"{leader['legacy_priority']:.1f}", f"#{baseline_rank}"],
-                "Scenario (+15)": [f"{gm:.1f}", f"{gmis:.1f}", f"{gp:.1f}", f"#{gr}"]})
-            st.dataframe(guide_scenario, hide_index=True, width="stretch")
+            g1.metric("Activity Score", fmt(demo_tract["activity_score"]))
+            g2.metric("Mobility Score", fmt(demo_tract["mobility_score"]))
+            g3.metric("Mismatch Score", fmt(demo_tract["mismatch_score"]))
+            st.plotly_chart(opportunity_matrix_figure(df, demo_tract, height=430), width="stretch")
+            st.write("**This tract has substantially higher activity than its mobility score, creating a strong diagnostic mismatch.**")
+            st.caption("Above the balance line = activity exceeds mobility.")
+
+        elif guide_step == 2:
+            st.subheader("2. Add the FIFA lens")
+            st.write("**Which existing mismatches overlap the FIFA 2026 planning context?**")
+            g1, g2, g3, g4 = st.columns(4)
+            g1.metric("Distance to NRG", f"{demo_tract['distance_to_nrg_miles']:.2f} mi")
+            g2.metric("FIFA Relevance", fmt(demo_tract["fifa_relevance"]))
+            g3.metric("Mismatch", fmt(demo_tract["mismatch_score"]))
+            g4.metric("Legacy Priority", fmt(demo_tract["legacy_priority"]))
+            st.write("**Proximity alone does not create priority. This tract combines an existing mismatch with strong FIFA relevance.**")
+            st.caption("FIFA Relevance is an event-proximity planning proxy—not measured visitor demand.")
+
+        elif guide_step == 3:
+            st.subheader("3. Test an illustrative intervention")
+            st.write("**What changes if the mobility indicator improves?**")
+            gm, gmis, gp, gr = scenario_values(demo_tract, 15, df)
+            baseline_rank = int(demo_tract["baseline_rank"])
+            baseline_col, scenario_col = st.columns(2)
+            with baseline_col:
+                st.markdown("#### Baseline")
+                b1, b2 = st.columns(2)
+                b1.metric("Mobility", fmt(demo_tract["mobility_score"]))
+                b2.metric("Mismatch", fmt(demo_tract["mismatch_score"]))
+                b1.metric("Legacy Priority", fmt(demo_tract["legacy_priority"]))
+                b2.metric("Rank", f"#{baseline_rank}")
+            with scenario_col:
+                st.markdown("#### Scenario · +15 mobility")
+                s1, s2 = st.columns(2)
+                s1.metric("Mobility", fmt(gm))
+                s2.metric("Mismatch", fmt(gmis))
+                s1.metric("Legacy Priority", fmt(gp))
+                s2.metric("Rank", f"#{gr}" if gr else "Unavailable")
+            st.plotly_chart(scenario_comparison_figure(
+                [demo_tract["mobility_score"], demo_tract["mismatch_score"], demo_tract["legacy_priority"]],
+                [gm, gmis, gp], height=350), width="stretch")
             st.warning("Illustrative planning scenario — not a forecast.")
-            if legacy_mode:
-                st.caption(f"Potential intervention category: {leader['suggested_intervention_category']} — a screening suggestion, not an engineering recommendation.")
-            if gmis == leader["mismatch_score"]:
-                st.write("Mobility improves, but this tract's normalized mismatch remains at the model ceiling, so its Legacy Priority and rank do not change. This is an honest consequence of applying the existing normalization consistently.")
-            else:
-                st.write("As the mobility indicator improves, the diagnostic mismatch changes. The scenario demonstrates how CorridorIQ can be used to explore planning tradeoffs.")
+            st.write("The scenario changes the mobility indicator and recalculates the diagnostic mismatch and priority.")
+            st.caption(f"Potential intervention category: {demo_tract['suggested_intervention_category']} — a screening suggestion, not an engineering recommendation.")
+
         else:
+            st.subheader("4. Does the result hold under different assumptions?")
+            st.write("**Sensitivity analysis tests alternative model assumptions.**")
             guide_sensitivity = sensitivity_results(df)
             rank_cols = st.columns(3)
+            guide_ranks = []
             for column, miles in zip(rank_cols, (10, 15, 20)):
-                rank = guide_sensitivity[miles]["rank"].loc[leader.name]
+                rank = guide_sensitivity[miles]["rank"].loc[demo_tract.name]
+                guide_ranks.append(int(rank))
                 column.metric(f"{miles}-mile assumption", f"Rank #{int(rank)}")
             guide_sets = [set(df.loc[guide_sensitivity[m]["priority"].nlargest(10).index, "GEOID"]) for m in (10, 15, 20)]
             overlap = len(set.intersection(*guide_sets))
             st.metric("Top-10 overlap", f"{overlap} of 10 tracts")
-            st.write("CorridorIQ tests multiple proximity assumptions so planners can see whether the priority signal depends heavily on a single modeling choice. This is prototype sensitivity analysis, not statistical validation.")
-            st.info("Explore the map yourself → Scroll to the Houston decision surface below.")
+            guide_range = max(guide_ranks) - min(guide_ranks)
+            if guide_range <= 5:
+                interpretation = "The tract remains highly ranked across all three FIFA proximity assumptions."
+            elif guide_range <= 15:
+                interpretation = "The tract remains competitive, with moderate rank movement across the three assumptions."
+            else:
+                interpretation = "The tract's rank changes meaningfully as the FIFA proximity assumption changes."
+            st.write(f"**{interpretation}**")
+            st.caption("Prototype sensitivity analysis — not statistical validation.")
+
+        back_col, next_col = st.columns([1, 2])
+        back_col.button("← Back", disabled=guide_step == 1, key="guide_back", on_click=guided_back)
+        next_label = (
+            "Next: Add the FIFA lens →" if guide_step == 1 else
+            "Next: Test an intervention →" if guide_step == 2 else
+            "Next: Check stability →" if guide_step == 3 else
+            "Explore the full dashboard →"
+        )
+        next_col.button(next_label, type="primary", key="guide_next", on_click=guided_next)
+    st.stop()
 
 # MODEL FLOW
 st.markdown('<div class="stage-label">Overview</div>', unsafe_allow_html=True)
@@ -348,7 +478,7 @@ k1, k2, k3, k4 = st.columns(4)
 k1.metric("Tracts Analyzed", f"{len(df):,}")
 k2.metric("High-Priority Tracts", f"{high_priority_count:,}", help="Top quartile by Legacy Priority rank")
 k3.metric("Highest Legacy Priority", f"{valid_priorities.max():.1f}")
-k4.metric("Median Mismatch Score", f"{df['mismatch_score'].median():.1f}")
+k4.metric("Positive-Mismatch Tracts", f"{int((df['mismatch_score'] > 0).sum()):,}")
 
 # MAP
 st.markdown("## Houston decision surface")
@@ -392,6 +522,7 @@ if legacy_mode:
 fig.update_layout(height=650, margin={"r": 0, "t": 0, "l": 0, "b": 0}, showlegend=False,
                   coloraxis_colorbar={"title": map_label, "thickness": 14})
 st.plotly_chart(fig, width="stretch")
+st.caption("These are the areas where high diagnostic mismatch overlaps strong event relevance.")
 if legacy_mode:
     st.caption("FIFA Event Mobility Spine: manually defined event-network reference points using well-known local anchors. This is a planning reference—not measured visitor movement.")
 
@@ -471,35 +602,9 @@ st.markdown('<div class="stage-label">Diagnose</div>', unsafe_allow_html=True)
 st.markdown("## Urban Opportunity Matrix")
 st.markdown('<div class="section-note">Why is it a mismatch? The diagonal marks equal Activity and Mobility scores.</div>', unsafe_allow_html=True)
 st.write("CorridorIQ focuses on the distance between urban intensity and mobility conditions. Tracts farther above the balance line exhibit larger diagnostic mismatch signals.")
-matrix_df = df.dropna(subset=["mobility_score", "activity_score", "fifa_relevance", "legacy_priority"]).copy()
-matrix = px.scatter(
-    matrix_df, x="mobility_score", y="activity_score", size="fifa_relevance", color="legacy_priority",
-    size_max=18, opacity=.46,
-    color_continuous_scale=[[0, "#A9A59C"], [.42, "#747A3D"], [.72, "#D6AE52"], [1, "#7A263A"]],
-    hover_name="tract_name", hover_data={"activity_score": ":.1f", "mobility_score": ":.1f",
-        "mismatch_score": ":.1f", "fifa_relevance": ":.1f", "legacy_priority": ":.1f",
-        "distance_to_nrg_miles": ":.2f", "corridor_type": True},
-    labels={"mobility_score": "Mobility Score", "activity_score": "Activity Score",
-        "legacy_priority": "Legacy Priority", "fifa_relevance": "FIFA Relevance",
-        "mismatch_score": "Mismatch", "distance_to_nrg_miles": "Distance to NRG",
-        "corridor_type": "Corridor Type"},
-)
-matrix.add_trace(go.Scatter(x=[0, 100], y=[0, 100], mode="lines", line={"color": "#A9A59C", "dash": "dash", "width": 2},
-                            name="Balance line", hovertemplate="Activity = Mobility<extra>Balance line</extra>"))
-matrix.add_trace(go.Scatter(x=[leader["mobility_score"]], y=[leader["activity_score"]], mode="markers",
-    marker={"size": 22, "color": "rgba(0,0,0,0)", "line": {"color": "#7A263A", "width": 3}},
-    name="Highest Legacy Priority", hovertemplate=f"<b>{leader['tract_name']}</b><extra>Highest Legacy Priority</extra>"))
-matrix.add_annotation(x=leader["mobility_score"], y=leader["activity_score"], text=leader["tract_name"].split(";")[0],
-                      showarrow=True, arrowhead=2, ax=55, ay=-35, bgcolor="#F4F0E6", bordercolor="#A9A59C",
-                      font={"color": "#262521"})
-matrix.add_annotation(x=72, y=68, text="Balance line", showarrow=False, font={"color": "#A9A59C"}, textangle=-38)
-matrix.update_xaxes(range=[0, 100], constrain="domain")
-matrix.update_yaxes(range=[0, 100], scaleanchor="x", scaleratio=1)
-matrix.update_layout(height=650, margin={"r": 20, "t": 25, "l": 20, "b": 20},
-                     legend={"orientation": "h", "y": 1.04, "x": 0}, coloraxis_colorbar={"title": "Legacy Priority"})
-style_dark_chart(matrix)
+matrix = opportunity_matrix_figure(df, leader)
 st.plotly_chart(matrix, width="stretch")
-st.caption("Bubble size represents FIFA Relevance. Points near the diagonal are relatively balanced under the prototype indicators; this is not a measure of congestion.")
+st.caption("Points farther above the balance line show larger activity–mobility gaps. Bubble size represents FIFA Relevance; this is not a measure of congestion.")
 
 positive_gap = df["activity_score"] > df["mobility_score"]
 valid_gap_count = int(df[["activity_score", "mobility_score"]].dropna().shape[0])
@@ -595,7 +700,7 @@ st.download_button(download_label, ranked_download.to_csv(index=False).encode("u
 st.markdown('<div class="stage-label">Decide</div>', unsafe_allow_html=True)
 st.markdown("## Explore decisions")
 explore_tab, scenario_tab, strategy_tab, compare_tab, robustness_tab = st.tabs(
-    ["Explore", "Scenario Lab", "Strategy Simulator", "Compare Corridors", "Robustness"])
+    ["Overview", "Scenario Lab", "Strategy Lab", "Compare", "Sensitivity"])
 
 with explore_tab:
     choice = st.selectbox("Select a tract", selector_options, key="selected_tract")
@@ -658,13 +763,9 @@ with scenario_tab:
         a, b, c, d = st.columns(4)
         a.metric("Mobility", fmt(scenario_mobility)); b.metric("Mismatch", fmt(scenario_mismatch))
         c.metric("Legacy Priority", fmt(scenario_priority)); d.metric("Rank", f"#{scenario_rank}" if scenario_rank else "N/A")
-    scenario_chart = pd.DataFrame({"Metric": ["Mobility", "Mismatch", "Legacy Priority"] * 2,
-        "Score": [current_mobility, scenario_tract["mismatch_score"], scenario_tract["legacy_priority"], scenario_mobility, scenario_mismatch, scenario_priority],
-        "State": ["Baseline"] * 3 + ["Scenario"] * 3})
-    scenario_fig = px.bar(scenario_chart, x="Metric", y="Score", color="State", barmode="group", range_y=[0, 100],
-                          color_discrete_map={"Baseline": "#A9A59C", "Scenario": "#747A3D"}, text_auto=".1f")
-    scenario_fig.update_layout(height=380, margin={"r": 10, "t": 15, "l": 10, "b": 10})
-    style_dark_chart(scenario_fig)
+    scenario_fig = scenario_comparison_figure(
+        [current_mobility, scenario_tract["mismatch_score"], scenario_tract["legacy_priority"]],
+        [scenario_mobility, scenario_mismatch, scenario_priority])
     st.plotly_chart(scenario_fig, width="stretch")
     if improvement == 0:
         scenario_sentence = "The baseline preset leaves mobility, mismatch, FIFA relevance, and diagnostic priority unchanged."
@@ -672,10 +773,11 @@ with scenario_tab:
         scenario_sentence = ("Under this illustrative scenario, mobility improves while the diagnostic mismatch falls. "
                              "FIFA relevance remains unchanged, so Legacy Priority also changes.")
     st.success(f"Priority rank changes from #{baseline_rank} to #{scenario_rank}. {scenario_sentence}")
+    st.write("The modeled intervention recalculates the diagnostic gap in this corridor; it does not forecast a real-world outcome.")
     st.caption("This control demonstrates how the prioritization framework responds when one underlying condition changes.")
 
 with strategy_tab:
-    st.subheader("Strategy Simulator")
+    st.subheader("Strategy Lab")
     st.write("Test how a consistent mobility-score intervention changes the diagnostic picture across a portfolio of tracts.")
     st.warning("Illustrative planning scenario — not a forecast.")
     sc1, sc2 = st.columns(2)
@@ -833,8 +935,8 @@ with compare_tab:
     st.info(sentence + " Comparison mode helps planners understand why two corridors with similar urban intensity can receive different priority scores.")
 
 with robustness_tab:
-    st.subheader("How robust is this result?")
-    st.write("Prototype sensitivity analysis tests whether the selected tract's priority depends strongly on the NRG distance assumption. Saved scores are not overwritten.")
+    st.subheader("Sensitivity Analysis")
+    st.write("Sensitivity analysis tests alternative model assumptions—here, whether the selected tract's priority depends strongly on the NRG distance cutoff. Saved scores are not overwritten.")
 
     st.markdown("#### Data completeness")
     core_labels = {"population": "Population", "population_density": "Population density",
@@ -876,6 +978,7 @@ with robustness_tab:
         stability = "Sensitive"
     st.metric("Rank stability", stability, f"{rank_range} rank positions" if rank_range is not None else None,
               delta_color="off")
+    st.caption("Stable rankings indicate the result is less dependent on the exact FIFA proximity assumption.")
 
     top_sets = [set(df.loc[sensitivity[miles]["priority"].nlargest(10).index, "GEOID"]) for miles in (10, 15, 20)]
     common_top10 = len(set.intersection(*top_sets))
